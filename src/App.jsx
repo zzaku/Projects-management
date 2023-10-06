@@ -1,34 +1,24 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { FirebaseProvider } from './components/context/firebaseContext'
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { DashBoardProject } from './components/dashBoardProject/DashBoardProject';
+import { Profile } from './components/profile/profile';
 import './App.css'
 
 function App() {
   const [count, setCount] = useState(0)
 
   return (
-    <>
       <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+        <FirebaseProvider>
+          <Router>
+            <Routes>
+              <Route path="/Profile" element={<Profile />}></Route>
+              <Route path="/DashBoard/:id" element={<DashBoardProject />}></Route>
+            </Routes>
+          </Router>
+        </FirebaseProvider>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
   )
 }
 
