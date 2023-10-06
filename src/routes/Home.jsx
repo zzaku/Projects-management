@@ -1,19 +1,29 @@
 import React from "react";
 import { styled } from '@mui/material/styles';
-import Box from '@mui/material/Box';
+//import Box from '@mui/material/Box';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
-import NavBar from "./NavBar.jsx";
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
 import { CardActionArea } from '@mui/material';
+import { useFirebase } from "../components/context/firebaseContext";
+import { AuthUser } from "../components/auth/AuthUser";
+import NavBar from "../components/navBar/NavBar";
+
 export default function Home() {
+
+    
+    const {needToConnect} = useFirebase()
 
     return(
         <div>
+            <div>
+                {needToConnect && <AuthUser />}
+                <h1>Bienvenue !</h1>
+            </div>
             <NavBar></NavBar>
             <h1>Projekto</h1>
             <Grid container spacing={2}>
