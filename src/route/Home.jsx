@@ -16,9 +16,9 @@ export default function Home() {
         <div>
             <NavBar></NavBar>
             <h1>Projekto</h1>
-            <Grid container spacing={3}>
+            <Grid container spacing={2}>
                 <Grid item xs={6}>
-                    <Card sx={{ maxWidth: 360 }}>
+                    <Card sx={{ maxWidth: 400 }}>
                         <CardActionArea>
                             <CardMedia component="img" height="140" image="/static/images/cards/contemplative-reptile.jpg" alt="green iguana"/>
                             <CardContent>
@@ -34,7 +34,7 @@ export default function Home() {
                     </Card>
                 </Grid>
                 <Grid item xs={6}>
-                    <Card sx={{ maxWidth: 360 }}>
+                    <Card sx={{ maxWidth: 500 }}>
                         <CardActionArea>
                             <CardMedia
                             component="img" height="140" image="/static/images/cards/contemplative-reptile.jpg" alt="green iguana"/>
