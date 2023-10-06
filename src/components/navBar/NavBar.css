@@ -1,0 +1,13 @@
+.navbar-container{
+    height: 10vh;
+    width: 100vw;
+    background-color: #0d1b2a;
+    border-bottom-left-radius: 25px;
+    border-bottom-right-radius: 25px;
+}
+
+.navbar-wrapper{
+    height: 100%;
+    width: 100%;
+    padding: 25px;
+}
