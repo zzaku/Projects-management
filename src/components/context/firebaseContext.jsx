@@ -16,85 +16,64 @@ export const FirebaseProvider = ({children}) => {
   const [needToConnect, setNeedToConnect] = useState(false);
   
   ////////local storage currentUserID
-  const userAccount = sessionStorage.user;
+  const userAccount = localStorage.user;
   const [currentUserID, setCurrentUserID] = useState(userAccount ? JSON.parse(userAccount) : {apiKey: "", appName: "", createdAt: "", email: "", emailVerified: null, isAnonymous: null, lastLoginAt: "", providerData: [], stsTokenManager: {}, uid: ""})
   
   useEffect(() => {
-    sessionStorage.setItem("user", JSON.stringify(currentUserID));
+    localStorage.setItem("user", JSON.stringify(currentUserID));
   }, [currentUserID]);
   ///////////////////////////////////////////////////////////
   
   ////////local storage currentUserID
-  const userAccountInfos = sessionStorage.userInfos;
+  const userAccountInfos = localStorage.userInfos;
   const [currentUser, setCurrentUser] = useState(userAccountInfos ? JSON.parse(userAccountInfos) : null)
   
   useEffect(() => {
-    sessionStorage.setItem("userInfos", JSON.stringify(currentUser));
+    localStorage.setItem("userInfos", JSON.stringify(currentUser));
   }, [currentUser]);
   ///////////////////////////////////////////////////////////
   
 //////////INSERTION DES DONNEES UTILISATEUR DANS LA BASE DE DONNEE ET RECUPERATION DES DONNEES//////
+/**/ 
+/**/   const userProjectRef = currentUserID && currentUser && currentUser[0] && currentUser[0].id && collection(db, "Users", currentUser[0].id, "Projects")
 /**/
-/**/   const userInfosRef = currentUserID && query(collection(db, "Users"), where("mail", "==", currentUserID.email)) 
-/**/   const userPreferencesRef = currentUserID && currentUser && currentUser[0] && currentUser[0].id && collection(db, "Users", currentUser[0].id, "Preferences")
-/**/   const userResumeRef = currentUserID && currentUser && currentUser[0] && currentUser[0].id && collection(db, "Users", currentUser[0].id, "Resume")
-/**/   const userRoomRef = currentUserID && currentUser && currentUser[0] && currentUser[0].id && collection(db, "Users", currentUser[0].id, "Room")
-/**/
-/**/   const addInfosUser = async (uid, infos) => {
-/**/        if(uid){
-/**/            await setDoc(doc(db, "Users", uid), infos)
-/**/            await getUser()
-/**/          }
-/**/     }
-/**/
-/**/      const getUser = async () => {
-/**/               if(userInfosRef){
-/**/                  const data = await getDocs(userInfosRef);
-/**/                  setCurrentUser(data.docs.map(doc => ({...doc.data(), id: doc.id})))
-/**/               }
-/**/        }
-/**/
-/**/   const setInfo = async (data, idUser) => {
-/**/          const userSetBio = currentUserID && currentUser && currentUser[0] && currentUser[0].id && doc(db, "Users", idUser)
-/**/          await updateDoc(userSetBio, data)
-/**/          getUser()
-/**/     }
-/**/
-/**/   const setDisplayInfosUser = async (data, idUser) => {
-/**/          const userSetDisplaying = currentUserID && currentUser && currentUser[0] && currentUser[0].id && doc(db, "Users", idUser)
-/**/          await updateDoc(userSetDisplaying, data)
-/**/          getUser()
-/**/     }
-/**/
-/**/   const setAvatarPath = async (data, idUser) => {
-/**/          const userSetAvatarPath = currentUserID && currentUser && currentUser[0] && currentUser[0].id && doc(db, "Users", idUser)
-/**/          await updateDoc(userSetAvatarPath, data)
-/**/          getUser()
-/**/     }
-/**/
-/**/   const uploadAvatar = async (avatar, path_avatar, uuid) => {   
-/**/          const avatarRef = ref(storage, `avatars/${path_avatar + uuid}`)
-/**/          await uploadString(avatarRef, avatar, 'data_url')
-/**/          getUser()
-/**/     }
-/**/
-/**/   const getBackImage = async (path_avatar1, path_avatar2, uuid) => {
-/**/          const storage = getStorage();
-/**/          const getUrl = getDownloadURL(ref(storage,`avatars/${path_avatar2 + uuid}`)).then(url => url)
-/**/          getUser()
-/**/          return getUrl
-/**/     }
-/**/
-/**/    useEffect(() => {
-/**/              return () => {
-  
-/**/                getUser();
-/**/             }
-/**/
-/**/    }, [currentUserID])
 /////////////////////////////////////////////////////////////////////////////////////////////////
 
 
+/**/   const addInfosUser = async (uid, infos) => {
+/**/        if(uid){
+/**/            await setDoc(doc(db, "Users", uid), infos);
+/**/          }
+/**/     }
+
+/**/   const getUser = async (mail) => {
+/**/         const userInfosRef = currentUserID && query(collection(db, "Users"), where("mail", "==", mail))
+
+/**/         if(userInfosRef){
+/**/             const data = await getDocs(userInfosRef);
+/**/             setCurrentUser(data.docs.map(doc => ({...doc.data(), id: doc.id})))
+/**/          }
+/**/     }
+
+/**/   const addProject = async (data) => {
+/**/        let response = "";
+
+/**/        await addDoc(userProjectRef, data).then((res) => {
+/**/            response = res;
+/**/            getProject();
+/**/        })
+/**/         return response.id;
+/**/     }
+
+/**/   const getProject = async () => {
+/**/          if(userProjectRef){
+/**/              const datas = await getDocs(userProjectRef);
+/**/              setCurrentUser({...currentUser, Projects: datas.docs.map(doc => ({...doc.data(), id: doc.id}))})
+/**/              return datas.docs.map(doc => ({...doc.data()}))
+/**/          } else {
+/**/              setCurrentUser(null)
+/**/          }
+/**/      }
 
 //////SIGNUP, LOGIN AND LOGOUT//////////////////////////////////////////////////////////////////
 /**/    const signup = async (auth, email, password) => {
@@ -156,7 +135,9 @@ export const FirebaseProvider = ({children}) => {
 /**/    useEffect(() => {
 /**/
 /**/         return onAuthStateChanged(auth, user => {
-/**/                setCurrentUserID(user)
+/**/                setCurrentUserID(user);
+/**/                getUser(user?.email);
+/**/                getProject();
 /**/        })
 /**/    }, [])
 /////////////////////////////////////////////////////////////////////////////////////////////
@@ -171,6 +152,8 @@ export const FirebaseProvider = ({children}) => {
         signup,
         signin,
         signout,
+        addInfosUser,
+        addProject,
       }
 
     return (
@@ -179,5 +162,3 @@ export const FirebaseProvider = ({children}) => {
         </FirebaseContext.Provider>
     )
 }
-
-

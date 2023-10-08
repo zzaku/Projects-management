@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import Box from '@mui/material/Box';
+import { Box } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -12,13 +12,16 @@ import Tooltip from '@mui/material/Tooltip';
 import Settings from '@mui/icons-material/Settings';
 import Logout from '@mui/icons-material/Logout';
 import { useFirebase } from "../context/firebaseContext";
+import Button from '@mui/material/Button';
+import { useNavigate } from "react-router-dom";
 import "./NavBar.css"
 import "../../Index.css"
 
 export default function NavBar() {
   const [anchorEl, setAnchorEl] = useState(null);
   const open = Boolean(anchorEl);
-  const {setNeedToConnect} = useFirebase()
+  const {setNeedToConnect, signout, currentUser, currentUserID} = useFirebase()
+  const navigate = useNavigate();
 
   const handleClick = (event) => {
     setAnchorEl(event.currentTarget);
@@ -26,13 +29,21 @@ export default function NavBar() {
   const handleClose = () => {
     setAnchorEl(null);
   };
+
+  const goToDashBoard = () => {
+    navigate(`/DashBoard/${currentUser[0].id}`);
+  }
+  
   return (
     <div className="navbar-container d-flex content-end">
       <div className="navbar-wrapper d-flex content-end item-start">  
         <Box sx={{ display: 'flex', alignItems: 'center', textAlign: 'center' }}>
-          <Typography sx={{ minWidth: 100 }}>Contact</Typography>
-          <Typography sx={{ minWidth: 100 }}>Profile</Typography>
-          <Tooltip title="Account settings">
+          {currentUserID && <Button variant="outained" onClick={goToDashBoard}><Typography style={{cursor: "pointer"}} sx={{ minWidth: 100 }}>DashBoard</Typography></Button>}
+          <Typography style={{cursor: "pointer"}} sx={{ minWidth: 100 }}>Contact</Typography>
+          <Typography style={{cursor: "pointer"}} sx={{ minWidth: 100 }}>Profile</Typography>
+          {!currentUserID && <Typography style={{cursor: "pointer"}} onClick={() => setNeedToConnect(true)} sx={{ minWidth: 100 }}>Connexion</Typography>}
+          {currentUserID && 
+          <Tooltip title="compte">
             <IconButton
               onClick={handleClick}
               size="small"
@@ -43,7 +54,7 @@ export default function NavBar() {
             >
               <Avatar sx={{ width: 32, height: 32 }}>M</Avatar>
             </IconButton>
-          </Tooltip>
+          </Tooltip>}
         </Box>
         <Menu
           anchorEl={anchorEl}
@@ -80,9 +91,6 @@ export default function NavBar() {
           transformOrigin={{ horizontal: 'right', vertical: 'top' }}
           anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
         >
-          <MenuItem onClick={() => setNeedToConnect(true)}>
-            <Avatar /> Connexion
-          </MenuItem>
           <MenuItem onClick={handleClose}>
             <Avatar /> My account
           </MenuItem>
@@ -97,7 +105,7 @@ export default function NavBar() {
             </ListItemIcon>
             Settings
           </MenuItem>
-          <MenuItem onClick={handleClose}>
+          <MenuItem onClick={signout}>
             <ListItemIcon>
               <Logout fontSize="small" />
             </ListItemIcon>
