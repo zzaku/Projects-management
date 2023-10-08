@@ -15,7 +15,7 @@ export const ProjectCard = ({project}) => {
     const navigate = useNavigate();
 
     const goToProjectManagement = () => {
-        navigate(`/DashBoard/${currentUser[0].id}/Projet/${project.id}`);
+        navigate(`/DashBoard/${currentUser.id}/Projet/${project.id}`);
     }
 
   return (

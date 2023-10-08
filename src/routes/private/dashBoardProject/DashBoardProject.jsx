@@ -1,15 +1,15 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { ProjectCard } from '../../../components/projectCard/projectCard';
 import { useFirebase } from '../../../components/context/firebaseContext';
-import { ModalForm } from '../../../components/modal/modalForm';
+import { ModalForm } from '../../../components/modal/modalForm/ModalForm';
 import Grid from '@mui/material/Grid';
 import "./DashBoardProject.css"
 
 export const DashBoardProject = () => {
 
-  const {currentUser} = useFirebase()
+  const {currentUser, getProject} = useFirebase()
   const [open, setOpen] = useState(false)
-
+  
   return (
     <>
       <div className='title d-flex content-center'>

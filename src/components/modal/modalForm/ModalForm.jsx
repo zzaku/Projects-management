@@ -10,7 +10,7 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useNavigate } from 'react-router-dom';
 import dayjs from 'dayjs';
 import "./modalForm.css";
-import { useFirebase } from '../context/firebaseContext';
+import { useFirebase } from '../../context/firebaseContext';
 
 export const ModalForm = ({open, setOpen}) => {
     const [projectValue, setProjectValue] = useState({projectName: "", deadline: ""});
@@ -38,7 +38,7 @@ export const ModalForm = ({open, setOpen}) => {
     };
     
     const handleSubmit = () => {
-        addProject(projectValue).then((id) => navigate(`/DashBoard/${currentUser[0].id}/Projet/${id}`));
+        addProject(projectValue).then((id) => navigate(`/DashBoard/${currentUser.id}/Projet/${id}`));
     }
 
   return (
