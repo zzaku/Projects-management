@@ -5,7 +5,7 @@ import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Outlet } from "react-router-dom";
 import CardContent from '@mui/material/CardContent';
 import CardMedia from '@mui/material/CardMedia';
 import Typography from '@mui/material/Typography';
@@ -24,7 +24,7 @@ export default function Home() {
     
     const goToDashBoard = () => {
         if(currentUserID){
-            navigate(`/DashBoard/${currentUser[0].id}`);
+            navigate(`/DashBoard/${currentUser.id}`);
         } else {
             setNeedToConnect(true);
         }
@@ -36,6 +36,7 @@ export default function Home() {
             <div className="title">
                 <h1>Projekto</h1>
             </div>
+            <Outlet />
             <Grid container spacing={5} style={{display: "flex", justifyContent: "space-around", marginTop: "2%"}}>
                 <Grid item xs={5}>
                     <Card sx={{ maxWidth: "100%", height: 500 }}>

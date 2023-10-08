@@ -1,0 +1,107 @@
+.title-container{
+    width: 50%;
+    color: black;
+    border-radius: 15px;
+    border: 3px black solid;
+}
+
+.collab-container{
+    width: 30%;
+    color: black;
+    border-radius: 15px;
+    border: 3px black solid;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.collab-container:hover{
+    transform: scale(1.03);
+}
+
+.profile-container{
+    margin-left: 15px;
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    border: 2px black solid;
+    background: rgb(179, 179, 179);
+}
+
+.title-name{
+    width: 85%;
+}
+
+.title-icon{
+    width: 10%;
+}
+
+h1{
+    margin-left: 5%;
+}
+h3{
+    margin-left: 10%;
+    margin-right: 4%;
+}
+h4{
+    margin: 2% 4%;
+}
+
+.task-tool{
+    width: 90%;
+    height: 10%;
+    margin-top: 2%;
+    background: #ede7e3;
+    border-radius: 25px;
+    border: 2px #ffa62b solid;
+    cursor: pointer;
+    transition: 0.2s;
+    transition: box-shadow 0.3s ease;
+    animation: 'highlight' 1s linear
+}
+
+.task-tool:hover{
+    transform: scale(1.03);
+}
+
+.page-content{
+    height: 65vh;
+    width: 100%; 
+    border: 2px black solid; 
+    background-color: #16697a;
+    overflow-y: scroll;
+}
+
+.task-content{
+    width: 100%;
+    height: 100%;
+}
+
+.dragging {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+    transform: scale(1.05);
+    transition: transform 0.2s;
+}
+
+.drop-zone {
+    border: 2px dashed #0073e6;
+    background-color: #f0f0f0;
+}
+
+.dropped {
+    background-color: #d8ffd6;
+    transition: background-color 0.5s;
+}
+
+@keyframes highlight {
+    0% {
+        background: transparent;
+    }
+
+    50% {
+        background: #ffeb3b;
+    }
+
+    100% {
+        background: transparent;
+    }
+}

@@ -8,6 +8,7 @@ import Home from './routes/public/home/Home';
 import {Management} from './routes/private/management/Management';
 import { ProtectedRoute } from './routes/ProtectedRoute';
 import './App.css'
+import { Invite } from './routes/public/home/invite/Invite';
 
 
 function App() {
@@ -18,14 +19,16 @@ function App() {
           <Router>
             <NavBar />
             <Routes>
-              <Route path="/" element={<Home/>} />
+              <Route path="/" element={<Home/>}>
+                <Route path="/invite/:id/:idProject" element={<Invite/>}/>
+              </Route>
               <Route path="/Profile" element={<Profile />}></Route>
               <Route path="/DashBoard/:id" element={
                 <ProtectedRoute>
                   <DashBoardProject />
                 </ProtectedRoute>}>
               </Route>
-              <Route path="/DashBoard/:id/Projet/:id" element={
+              <Route path="/DashBoard/:id/Projet/:idProject" element={
                 <ProtectedRoute>
                   <Management />
                 </ProtectedRoute>}>

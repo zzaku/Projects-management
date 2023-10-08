@@ -31,7 +31,7 @@ export default function NavBar() {
   };
 
   const goToDashBoard = () => {
-    navigate(`/DashBoard/${currentUser[0].id}`);
+    navigate(`/DashBoard/${currentUser[0]?.id}`);
   }
   
   return (
