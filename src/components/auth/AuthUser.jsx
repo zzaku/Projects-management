@@ -19,7 +19,6 @@ export const AuthUser = () => {
   transform: 'translate(-50%, -50%)',
   width: 460,
   bgcolor: 'background.paper',
-  border: '2px solid #000',
   boxShadow: 24,
   p: 4,
   borderRadius: "12px",

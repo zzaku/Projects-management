@@ -14,11 +14,12 @@
     background-color: #171717;
     border-radius: 8px;
     transition: .25s ease-in-out;
+    border: #E1E1E1 2px solid;
+    box-shadow: rgba(237, 237, 237, 0.25) 0px 13px 27px -5px, rgba(237, 237, 237, 0.3) 0px 8px 16px -8px;
 }
 
 .form:hover {
     transform: scale(1.05);
-    border: #E1E1E1 2px solid;
 }
 
 #heading {

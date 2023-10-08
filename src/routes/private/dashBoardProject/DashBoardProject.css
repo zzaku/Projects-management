@@ -1,0 +1,48 @@
+.title{
+    margin-top: 1%;
+}
+
+.grid-card-container::-webkit-scrollbar-track {
+    -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+    background-color: #F5F5F5;
+    border-radius: 10px;
+}
+
+.grid-card-container::-webkit-scrollbar {
+    width: 10px;
+    background-color: #F5F5F5;
+    border-radius: 10px;
+}
+
+.grid-card-container::-webkit-scrollbar-thumb {
+    border-radius: 10px;
+    background: #0d1b2a;
+}
+
+.card-create-project {
+    width: 345px;
+    height: 250px;
+    background: rgba(217, 217, 217, 0.58);
+    border: 1px solid white;
+    box-shadow: 12px 17px 51px rgba(0, 0, 0, 0.22);
+    backdrop-filter: blur(6px);
+    border-radius: 17px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    font-weight: bolder;
+    color: black;
+}
+
+.card-create-project:hover {
+    border: 1px solid #16697a;
+    transform: scale(1.02);
+}
+
+.card-create-project:active {
+    transform: scale(0.95) rotateZ(1.7deg);
+}
