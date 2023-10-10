@@ -1,7 +1,7 @@
 import { useContext, createContext, useState, useEffect } from "react";
 import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut, updateEmail, updatePassword, deleteUser, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth"
 import { db, auth } from "../Firebase/Firebase";
-import { collection, getDocs, getDoc, addDoc, query, where, updateDoc, doc, onSnapshot, deleteDoc, setDoc, deleteField, documentId } from "firebase/firestore";
+import { collection, getDocs, getDoc, addDoc, query, where, updateDoc, doc, onSnapshot, deleteDoc, setDoc, deleteField, documentId, arrayUnion } from "firebase/firestore";
 import { storage } from "../Firebase/Firebase";
 import { ref, uploadBytes, getStorage, getDownloadURL, uploadString, deleteObject, listAll, list } from "firebase/storage";
 
@@ -62,9 +62,10 @@ export const FirebaseProvider = ({children}) => {
 /**/   const addProject = async (data) => {
 /**/        let response = "";
 
-/**/        await addDoc(userProjectRef, data).then((res) => {
+/**/        await addDoc(userProjectRef, data).then(async (res) => {
 /**/            response = res;
-/**/            getProject(currentUser.id);
+/**/            await getProject(currentUser.id);
+/**/            await getProjectById(response.id);
 /**/        })
 /**/         return response.id;
 /**/     }
@@ -88,19 +89,24 @@ export const FirebaseProvider = ({children}) => {
 /**/              }
 
 /**/              await setDoc(doc(db, "Projects", change.doc.id), {...change.doc.data(), collaborators: collaborators});
+/**/              await setDoc(doc(db, "Users", currentUser.id, "Projects", change.doc.id), {...change.doc.data(), collaborators: collaborators});
 /**/          }
 /**/          if (change.type === "modified") {
-/**/          }
-/**/          if (change.type === "removed") {
-/**/          }
-/**/        });
-/**/      });
+/**/              const data = change.doc.data()
+/**/              const owner = data?.collaborators[0]?.owner[0];
+/**/              if(owner){
+/**/                  const invited = data.collaborators[0].invited.filter(collaborator => collaborator.id !== currentUser.id);
 
-/**/      onSnapshot(q2, (snapshot) => {
-/**/        snapshot.docChanges().forEach( async (change) => {
-/**/          if (change.type === "modified") {
-/**/              const projectDoc = doc(db, "Users", currentUser.id, "Projects");
-/**/              await setDoc(projectDoc, {...change.doc.data()});
+/**/                  await setDoc(doc(db, "Projects", change.doc.id), {...data});
+
+/**/                  if(owner.id !== currentUser.id) {
+/**/                      await setDoc(doc(db, "Users", currentUser.id, "Projects", change.doc.id), {...data});  
+/**/                  }
+
+/**/                  invited.forEach(async (collaborator) => {
+/**/                      await setDoc(doc(db, "Users", collaborator.id, "Projects", change.doc.id), {...data});
+/**/                  })
+/**/              }
 /**/          }
 /**/          if (change.type === "removed") {
 /**/          }
@@ -133,33 +139,23 @@ export const FirebaseProvider = ({children}) => {
 /**/      }
 
 /**/   const setTasks = async (idProject, data) => {
-/**/        let response = "";
+/**/        const userProjectTaskRef = doc(db, "Users", currentUser.id, "Projects", idProject);
 
-/**/        const userProjectTaskRef = doc(db, "Projects", idProject);
+/**/        try{
+/**/                await updateDoc(userProjectTaskRef, {tasks : data});
 
-/**/        await setDoc(userProjectTaskRef, data).then((res) => {
-/**/            response = res;
-/**/        })
-/**/         return response.id;
-/**/     }
+/**/                const datas = await getProjectById(idProject);
 
-
-/**/   const getTasks = async (idProject, userId) => {
-/**/          const userProjectRef = userId && collection(db, "Users", userId, "Projects", idProject, "tasks")
-/**/          if(userProjectRef){
-/**/              const datas = await getDocs(userProjectRef);
-/**/              const userDatas = datas.docs.map(doc => ({ ...doc.data(), id: doc.id }))
-/**/              setCurrentUser(prev => ({ ...prev, Projects: [prev.Projects, userDatas] }))
-/**/              return datas.docs.map(doc => ({ ...doc.data() }))
-/**/          } else {
-/**/              setCurrentUser(null)
-/**/          }
-/**/      }
+/**/                setCurrentUser(prev => ({ ...prev, currentProject: datas }));
+/**/        } catch(err) {
+/**/            throw err;
+/**/        }
+/**/    }
 
 ///////////à revoire !!
 /**/   const joinProject = async (id, idProject) => {
 /**/          let response = {};
-/**/          const userProjectByIdRef = currentUserID && query(collection(db, "Users", currentUser.id, "Projects"), where(documentId(), "==", idProject))     
+/**/          const userProjectByIdRef = currentUserID && query(collection(db, "Users", currentUser?.id, "Projects"), where(documentId(), "==", idProject))     
 
 /**/          if(!currentUserID){
 /**/            response = {needToLogIn: true, content: "Vous devez vous connecter avant de rejoindre vos collaborateurs.", authorize: false}

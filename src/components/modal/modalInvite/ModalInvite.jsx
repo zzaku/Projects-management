@@ -25,7 +25,6 @@ export const ModalInvite = ({open, setOpen}) => {
 
         joinProject(param.id, param.idProject)
         .then((val) => {
-            console.log(val);
             if(val?.authorize){
                 navigate(`/DashBoard/${currentUser.id}/Projet/${param.idProject}`)
             } else if(!val.authorize && val.needToLogIn){

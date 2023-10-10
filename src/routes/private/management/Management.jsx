@@ -14,17 +14,17 @@ export const Management = () => {
   const [open, setOpen] = useState(false)
   const param = useParams();
   const {getProjectById, currentUser, setTasks} = useFirebase()
-  const [myTasks, setMyTasks] = useState(currentUser?.currentProject?.tasks ? [...currentUser?.currentProject?.tasks] : []);
-  const [tasksDone, setTasksDone] = useState(currentUser?.currentProject?.tasksDone ? [...currentUser?.currentProject?.tasksDone] : []);
+  const [myTasks, setMyTasks] = useState([]);
+  const [tasksDone, setTasksDone] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const [openTask, setOpenTask] = useState(false);
   const [currentTask, setCurrentTask] = useState({title: "", description: "", id: ""})
   const owner = currentUser?.currentProject?.collaborators[0]?.owner[0]?.name.substring(0, 2).toUpperCase();
 
   useEffect(() => {
-    getProjectById(param.idProject)
+    getProjectById(param.idProject).then((project) => setMyTasks(project.tasks ? project.tasks : []))
   }, [])
-
+  
   const handleDrag = (e) => {
     e.dataTransfer.setData('Task', JSON.stringify({title: "Nom de tâche", description: "Description", id: myTasks.length}));
     setIsDragging(true);
@@ -37,7 +37,7 @@ export const Management = () => {
     setIsDragging(false);
     setMyTasks(prev => [...prev, data])
 
-    setTasks()
+    setTasks(param.idProject, [...myTasks, data])
   }
 
   const handleDragOver = (e) => {
@@ -111,7 +111,7 @@ export const Management = () => {
         </Grid>
       </Grid>
       <ModalCollab open={open} setOpen={setOpen} />
-      <ModalTask open={openTask} setOpen={setOpenTask} tasks={myTasks} setTasks={setMyTasks} defaultTitle={currentTask.title} defaultDescription={currentTask.description} defaultId={currentTask.id} />
+      <ModalTask open={openTask} setOpen={setOpenTask} myTasks={myTasks} setMyTasks={setMyTasks} defaultTitle={currentTask.title} defaultDescription={currentTask.description} defaultId={currentTask.id} />
     </Grid>
   )
 }
