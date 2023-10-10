@@ -1,7 +1,7 @@
 import { useContext, createContext, useState, useEffect } from "react";
 import { createUserWithEmailAndPassword, onAuthStateChanged, signInWithEmailAndPassword, signOut, updateEmail, updatePassword, deleteUser, reauthenticateWithCredential, EmailAuthProvider } from "firebase/auth"
 import { db, auth } from "../Firebase/Firebase";
-import { collection, getDocs, addDoc, query, where, updateDoc, doc, onSnapshot, deleteDoc, setDoc, deleteField, documentId } from "firebase/firestore";
+import { collection, getDocs, getDoc, addDoc, query, where, updateDoc, doc, onSnapshot, deleteDoc, setDoc, deleteField, documentId } from "firebase/firestore";
 import { storage } from "../Firebase/Firebase";
 import { ref, uploadBytes, getStorage, getDownloadURL, uploadString, deleteObject, listAll, list } from "firebase/storage";
 
@@ -17,7 +17,7 @@ export const FirebaseProvider = ({children}) => {
   
   ////////local storage currentUserID
   const userAccount = localStorage.user;
-  const [currentUserID, setCurrentUserID] = useState(userAccount ? JSON.parse(userAccount) : {apiKey: "", appName: "", createdAt: "", email: "", emailVerified: null, isAnonymous: null, lastLoginAt: "", providerData: [], stsTokenManager: {}, uid: ""})
+  const [currentUserID, setCurrentUserID] = useState(userAccount ? JSON.parse(userAccount) : {})
   
   useEffect(() => {
     localStorage.setItem("user", JSON.stringify(currentUserID));
@@ -54,6 +54,7 @@ export const FirebaseProvider = ({children}) => {
 /**/             const updatedUser = { ...currentUser, ...userDatas[0] };
 
 /**/             setCurrentUser(updatedUser)
+/**/             onProject()
 /**/             return data
 /**/          }
 /**/     }
@@ -67,6 +68,45 @@ export const FirebaseProvider = ({children}) => {
 /**/        })
 /**/         return response.id;
 /**/     }
+        
+        const onProject = () => {
+/**/      const q = collection(db, "Users", currentUser.id, "Projects");
+/**/      const q2 = collection(db, "Projects");
+
+/**/      onSnapshot(q, (snapshot) => {
+/**/        snapshot.docChanges().forEach( async (change) => {
+/**/          if (change.type === "added") {
+/**/              const projectDoc = doc(db, "Projects", change.doc.id);
+/**/              const projectSnapshot = await getDoc(projectDoc);
+/**/              const projectData = projectSnapshot.data();
+/**/              const collaborators = projectData?.collaborators || [{owner: [], invited: []}];
+
+/**/              if (!collaborators[0]?.owner[0]?.id) {
+/**/                collaborators[0]?.owner?.push({id: currentUser.id, name: currentUser.username})
+/**/              } else if (collaborators[0]?.owner[0]?.id !== currentUser?.id && !collaborators[0]?.invited?.some(invited => invited.id === currentUser.id)){
+/**/                collaborators[0]?.invited?.push({id: currentUser.id, name: currentUser.username});
+/**/              }
+
+/**/              await setDoc(doc(db, "Projects", change.doc.id), {...change.doc.data(), collaborators: collaborators});
+/**/          }
+/**/          if (change.type === "modified") {
+/**/          }
+/**/          if (change.type === "removed") {
+/**/          }
+/**/        });
+/**/      });
+
+/**/      onSnapshot(q2, (snapshot) => {
+/**/        snapshot.docChanges().forEach( async (change) => {
+/**/          if (change.type === "modified") {
+/**/              const projectDoc = doc(db, "Users", currentUser.id, "Projects");
+/**/              await setDoc(projectDoc, {...change.doc.data()});
+/**/          }
+/**/          if (change.type === "removed") {
+/**/          }
+/**/        });
+/**/      });
+/**/    }
 
 /**/   const getProject = async (userId) => {
 /**/          const userProjectRef = userId && collection(db, "Users", userId, "Projects")
@@ -80,21 +120,25 @@ export const FirebaseProvider = ({children}) => {
 /**/          }
 /**/      }
 
-/**/   const getProjectById = async (id, idProject) => {
-/**/          const userProjectByIdRef = currentUserID && query(collection(db, "Users", id, "Projects"), where(documentId(), "==", idProject))
+/**/   const getProjectById = async (idProject) => {
+/**/          const userProjectByIdRef = doc(db, "Projects", idProject);
+
 /**/          if(userProjectByIdRef){
-/**/              const datas = await getDocs(userProjectByIdRef);
-/**/              return datas.docs.map(doc => ({...doc.data()}))
+/**/              const datas = await getDoc(userProjectByIdRef);
+
+/**/              setCurrentUser(prev => ({ ...prev, currentProject: datas.data() }));
+
+/**/              return datas.data();
 /**/          }
 /**/      }
 
-/**/   const addTasks = async (idProject, data) => {
+/**/   const setTasks = async (idProject, data) => {
 /**/        let response = "";
 
-/**/        const userProjectTaskRef = collection(db, "Users", currentUser.id, "Projects", idProject, "tasks");
-/**/        await addDoc(userProjectTaskRef, data).then((res) => {
+/**/        const userProjectTaskRef = doc(db, "Projects", idProject);
+
+/**/        await setDoc(userProjectTaskRef, data).then((res) => {
 /**/            response = res;
-/**/            getTasks(idProject, currentUser.id);
 /**/        })
 /**/         return response.id;
 /**/     }
@@ -131,10 +175,10 @@ export const FirebaseProvider = ({children}) => {
 /**/              const datas = await getDocs(userProjectByIdRef);
 
 /**/              if(datas.docs.length < 1){
-/**/                const data = await getProjectById(id, idProject)
+/**/                const data = await getProjectById(idProject)
 
 /**/                if(data){
-/**/                  const projectData = data[0];
+/**/                  const projectData = data;
 /**/                  const projectRef = doc(db, "Users", currentUser.id, "Projects", idProject)
 
 /**/                  await setDoc(projectRef, projectData);
@@ -214,6 +258,10 @@ export const FirebaseProvider = ({children}) => {
 
 /**/         return () => unsubscribe
 /**/    }, [currentUserID])
+
+/**/    useEffect(() => {
+/**/
+/**/    }, [currentUser])
 /////////////////////////////////////////////////////////////////////////////////////////////
 
     const value = {
@@ -230,7 +278,8 @@ export const FirebaseProvider = ({children}) => {
         addProject,
         getProject,
         getProjectById,
-        joinProject
+        joinProject,
+        setTasks
       }
 
     return (

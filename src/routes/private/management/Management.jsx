@@ -13,50 +13,49 @@ export const Management = () => {
 
   const [open, setOpen] = useState(false)
   const param = useParams();
-  const {getProjectById, currentUser} = useFirebase()
-  const [project, setProject] = useState({})
-  const [myTasks, setMyTasks] = useState(currentUser?.currentProject ? [...currentUser?.currentProject?.tasks] : [{title: "test1", description: "petit test"}, {title: "test2", description: "grand test"}]);
-  const [tasksDone, setTasksDone] = useState(currentUser?.currentProject ? [...currentUser?.currentProject?.tasksDone] : []);
+  const {getProjectById, currentUser, setTasks} = useFirebase()
+  const [myTasks, setMyTasks] = useState(currentUser?.currentProject?.tasks ? [...currentUser?.currentProject?.tasks] : []);
+  const [tasksDone, setTasksDone] = useState(currentUser?.currentProject?.tasksDone ? [...currentUser?.currentProject?.tasksDone] : []);
   const [isDragging, setIsDragging] = useState(false);
   const [openTask, setOpenTask] = useState(false);
-  const [currentTask, setCurrentTask] = useState({title: "", description: ""})
+  const [currentTask, setCurrentTask] = useState({title: "", description: "", id: ""})
+  const owner = currentUser?.currentProject?.collaborators[0]?.owner[0]?.name.substring(0, 2).toUpperCase();
 
   useEffect(() => {
-    getProjectById(param.id, param.idProject)
-    .then((val) => setProject({projectName: val[0].projectName, deadline: new Date(val[0].deadline.seconds * 1000).toLocaleString('fr-FR')}));
+    getProjectById(param.idProject)
   }, [])
 
   const handleDrag = (e) => {
-    e.dataTransfer.setData('Task', JSON.stringify({title: "Nom de la tâche", description: "La description de votre tâche se trouve juste ici"}));
+    e.dataTransfer.setData('Task', JSON.stringify({title: "Nom de tâche", description: "Description", id: myTasks.length}));
     setIsDragging(true);
   }
 
   const handleDrop = (e) => {
     const dataString  = e.dataTransfer.getData("Task");
     const data = JSON.parse(dataString);
-    setIsDragging(false);
 
+    setIsDragging(false);
     setMyTasks(prev => [...prev, data])
+
+    setTasks()
   }
 
   const handleDragOver = (e) => {
     e.preventDefault();
   }
 
-  const handleEditTask = (title, description) => {
-    setCurrentTask({title, description})
+  const handleEditTask = (title, description, id) => {
+    setCurrentTask({title, description, id})
     setOpenTask(true)
   }
-
-  console.log(myTasks)
 
   return (
     <Grid className='grid-card-container' container spacing={2} sx={{ bgcolor: '#ede7e3', borderRadius: "10px", margin: "auto", marginTop: "10px", border: "3px solid #16697a", height: '87vh', width: '98%', overflowY: "scroll"}}>
       <Grid item xs={12} sx={{display: "flex", width: "100%", height: "10%", justifyContent: "space-around"}}>
         <div className='title-container d-flex content-s-a item-center'>
           <div className='title-name d-flex item-center'>
-            <h1>{project.projectName}</h1>
-            <h3>{project.deadline} (2 semaines)</h3>
+            <h1>{currentUser?.currentProject?.projectName}</h1>
+            <h3>Deadline : {new Date(currentUser?.currentProject?.deadline.seconds * 1000).toLocaleString('fr-FR')}</h3>
           </div>
           <div className='title-icon d-flex content-end item-center'>
             <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="40" height="40" viewBox="0 0 32 32">
@@ -68,8 +67,17 @@ export const Management = () => {
           <div className='title-name d-flex item-center'>
             <h1>Collaborateurs</h1>
             <div className='profile-container d-flex content-center item-center'>
-              <p>EM</p>
+              <p>{owner}</p>
             </div>
+            {
+              currentUser?.currentProject?.collaborators[0]?.invited.map((invited, index) => {
+                return (
+                  <div key={index} className='profile-container d-flex content-center item-center'>
+                    <p>{invited.name.substring(0, 2).toUpperCase()}</p>
+                  </div>
+                )
+              })
+            }
           </div>
           <div className='title-icon d-flex content-end item-center'>
             <ChatIcon sx={{width: "40px", height: "auto"}}/>
@@ -84,9 +92,9 @@ export const Management = () => {
               <Paper sx={{height: "100%", width: "100%"}}>
                 <div onDrop={(e) => i === 1 && handleDrop(e)} onDragOver={(e) => handleDragOver(e)} className="page-content d-flex flex-column item-center">
                   {i === 0 && <div className={`task-tool d-flex content-s-a item-center ${isDragging ? 'dragging' : ''}`} style={{  boxShadow: '0 0 5px rgba(0, 0, 0, 0.5)' }} draggable="true" onDragStart={(e) => handleDrag(e)}><h3>Ajouter une tâche</h3><AssignmentIcon /></div>}
-                  {i === 1 && myTasks.map((task, index) => {
+                  {i === 1 && myTasks.sort((a, b) => a.id - b.id).map((task, index) => {
                     return (
-                      <div key={index} className='task-tool d-flex content-s-a item-center' onDragStart={(e) => handleDrag(e)}><div className='task-content d-flex flex-column content-s-a' onClick={() => handleEditTask(task.title, task.description)}><h3 style={{marginLeft: "4%"}}>{task.title}</h3><h4>{task.description.length > 45 ? `${task.description.substring(0, 45)}...` : task.description}</h4></div><AssignmentIcon /></div>
+                      <div key={index} className='task-tool d-flex content-s-a item-center' onDragStart={(e) => handleDrag(e)}><div className='task-content d-flex flex-column content-s-a' onClick={() => handleEditTask(task.title, task.description, task.id)}><h3 style={{marginLeft: "4%"}}>{task.title}</h3><h4>{task.description.length > 45 ? `${task.description.substring(0, 45)}...` : task.description}</h4></div><AssignmentIcon /></div>
                     )
                     })
                   }
@@ -103,7 +111,7 @@ export const Management = () => {
         </Grid>
       </Grid>
       <ModalCollab open={open} setOpen={setOpen} />
-      <ModalTask open={openTask} setOpen={setOpenTask} defaultTitle={currentTask.title} defaultDescription={currentTask.description} />
+      <ModalTask open={openTask} setOpen={setOpenTask} tasks={myTasks} setTasks={setMyTasks} defaultTitle={currentTask.title} defaultDescription={currentTask.description} defaultId={currentTask.id} />
     </Grid>
   )
 }
