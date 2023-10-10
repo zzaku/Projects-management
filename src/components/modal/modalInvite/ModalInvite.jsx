@@ -16,8 +16,8 @@ export const ModalInvite = ({open, setOpen}) => {
     const [allowed, setAllowed] = useState(true)
 
     useEffect(() => {
-        getProjectById(param.id, param.idProject)
-        .then((val) => setProject({projectName: val[0].projectName, deadline: new Date(val[0].deadline.seconds * 1000).toLocaleString('fr-FR')}));
+        getProjectById(param.idProject)
+        .then((val) => setProject({projectName: val.projectName, deadline: new Date(val.deadline.seconds * 1000).toLocaleString('fr-FR')}));
     }, [])
 
     const handleJoinProject = () => {
@@ -25,7 +25,8 @@ export const ModalInvite = ({open, setOpen}) => {
 
         joinProject(param.id, param.idProject)
         .then((val) => {
-            if(val.authorize){
+            console.log(val);
+            if(val?.authorize){
                 navigate(`/DashBoard/${currentUser.id}/Projet/${param.idProject}`)
             } else if(!val.authorize && val.needToLogIn){
                 setNeedToConnect(true);
