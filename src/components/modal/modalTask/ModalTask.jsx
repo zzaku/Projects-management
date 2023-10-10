@@ -7,11 +7,12 @@ import TextField from '@mui/material/TextField';
 import "./ModalTask.css"
 import { useFirebase } from '../../context/firebaseContext';
 
-export const ModalTask = ({open, setOpen, tasks, setTasks, defaultTitle, defaultDescription, defaultId}) => {
+export const ModalTask = ({open, setOpen, myTasks, setMyTasks, defaultTitle, defaultDescription, defaultId}) => {
 
     const projectId = useParams();
     const [taskValue, setTaskValue] = useState({title: "", description: ""});
-    const {} = useFirebase()
+    const {setTasks} = useFirebase()
+    const param = useParams();
 
     const style = {
         display: "flex",
@@ -34,9 +35,11 @@ export const ModalTask = ({open, setOpen, tasks, setTasks, defaultTitle, default
     };
 
     const handleSave = () => {
-        let task = tasks.filter(task => task.id !== defaultId);
-        setTasks([...task, {...taskValue, id: defaultId}]);
-        setOpen(false);
+        let task = myTasks.filter(task => task.id !== defaultId);
+
+        setMyTasks([...task, {...taskValue, id: defaultId}]);
+
+        setTasks(param.idProject, [...task, {...taskValue, id: defaultId}]).then(() => setOpen(false));
     }
     
   return (
